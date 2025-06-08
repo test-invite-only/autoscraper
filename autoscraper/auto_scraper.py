@@ -737,7 +737,9 @@ class AutoScraper(object):
                 if not val:
                     continue
                 if isinstance(val, (list, tuple)):
-                    val = " ".join(val)
+                    val = " ".join(str(v).strip() for v in val)
+                if isinstance(val, str):
+                    val = val.strip()
                 attr_conditions.append(f"@{attr}=\"{val}\"")
             cond = ""
             if attr_conditions:
