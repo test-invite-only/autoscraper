@@ -39,3 +39,11 @@ def test_similar_keep_order():
     scraper.build(html=HTML, wanted_list=["Banana"])
     result = scraper.get_result_similar(html=HTML, contain_sibling_leaves=True, keep_order=True)
     assert result == ["Banana", "Apple", "Orange"]
+
+
+def test_get_rule_xpaths():
+    scraper = AutoScraper()
+    scraper.build(html=HTML, wanted_list=["Banana"])
+    rule_id = scraper.stack_list[0]["stack_id"]
+    xpaths = scraper.get_rule_xpaths()
+    assert xpaths[rule_id] == "/ul[1]/li[1]"

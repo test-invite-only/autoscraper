@@ -720,6 +720,45 @@ class AutoScraper(object):
         for rule_id, alias in rule_aliases.items():
             id_to_stack[rule_id]["alias"] = alias
 
+    @staticmethod
+    def _stack_to_xpath(stack):
+        """Return an XPath expression for the given rule stack."""
+
+        path_parts = []
+        content = stack.get("content", [])
+        for idx, item in enumerate(content):
+            tag = item[0]
+            if tag == "[document]":
+                continue
+
+            attrs = item[1]
+            attr_conditions = []
+            for attr, val in attrs.items():
+                if not val:
+                    continue
+                if isinstance(val, (list, tuple)):
+                    val = " ".join(val)
+                attr_conditions.append(f"@{attr}=\"{val}\"")
+            cond = ""
+            if attr_conditions:
+                cond = "[" + " and ".join(attr_conditions) + "]"
+
+            index_part = ""
+            if idx > 0 and len(content[idx - 1]) > 2:
+                index_part = f"[{content[idx - 1][2] + 1}]"
+
+            path_parts.append(f"/{tag}{cond}{index_part}")
+
+        return "".join(path_parts)
+
+    def get_rule_xpaths(self):
+        """Return a dictionary mapping rule_id to XPath expression."""
+
+        return {
+            stack["stack_id"]: self._stack_to_xpath(stack)
+            for stack in self.stack_list
+        }
+
     def generate_python_code(self):
         # deprecated
         print("This function is deprecated. Please use save() and load() instead.")
