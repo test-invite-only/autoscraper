@@ -5,6 +5,8 @@
 This project is made for automatic web scraping to make scraping easy. 
 It gets a url or the html content of a web page and a list of sample data which we want to scrape from that page. **This data can be text, url or any html tag value of that page.** It learns the scraping rules and returns the similar elements. Then you can use this learned object with new urls to get similar content or the exact same element of those new pages.
 
+The library ships with the synchronous `AutoScraper` and an asynchronous `AsyncAutoScraper` for use with `asyncio`.
+
 
 ## Installation
 
@@ -116,6 +118,21 @@ scraper.build(url, wanted_list)
 ```
 
 Simple, right?
+
+### Asynchronous scraping
+
+AutoScraper also provides an `AsyncAutoScraper` class that uses `aiohttp` to fetch pages asynchronously. Its API mirrors the synchronous class.
+
+```python
+from autoscraper import AsyncAutoScraper
+
+async def run():
+    scraper = AsyncAutoScraper()
+    await scraper.build(url, wanted_list)
+    results = await scraper.get_result_similar(url)
+
+# asyncio.run(run())
+```
 
 
 ### Saving the model

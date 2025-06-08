@@ -724,3 +724,172 @@ class AutoScraper(object):
     def generate_python_code(self):
         # deprecated
         print("This function is deprecated. Please use save() and load() instead.")
+
+
+class AsyncAutoScraper(AutoScraper):
+    """Asynchronous version of :class:`AutoScraper`."""
+
+    @classmethod
+    async def _fetch_html_async(cls, url, request_args=None, session=None):
+        """Asynchronously fetch HTML from ``url`` using ``aiohttp``."""
+        import aiohttp
+
+        request_args = request_args or {}
+        headers = dict(cls.request_headers)
+        if url:
+            headers["Host"] = urlparse(url).netloc
+
+        user_headers = request_args.pop("headers", {})
+        headers.update(user_headers)
+
+        close_session = session is None
+        if close_session:
+            session = aiohttp.ClientSession()
+        try:
+            async with session.get(url, headers=headers, **request_args) as res:
+                html = await res.text()
+        finally:
+            if close_session:
+                await session.close()
+
+        return html
+
+    @classmethod
+    async def _get_soup_async(cls, url=None, html=None, request_args=None, session=None):
+        if html:
+            html = normalize(unescape(html))
+            return BeautifulSoup(html, "lxml")
+
+        html = await cls._fetch_html_async(url, request_args=request_args, session=session)
+        html = normalize(unescape(html))
+
+        return BeautifulSoup(html, "lxml")
+
+    async def build(
+        self,
+        url=None,
+        wanted_list=None,
+        wanted_dict=None,
+        html=None,
+        request_args=None,
+        update=False,
+        text_fuzz_ratio=1.0,
+    ):
+        if not wanted_list and not (wanted_dict and any(wanted_dict.values())):
+            raise ValueError("No targets were supplied")
+
+        soup = await self._get_soup_async(url=url, html=html, request_args=request_args)
+
+        result_list = []
+
+        if update is False:
+            self.stack_list = []
+
+        if wanted_list:
+            wanted_dict = {"": wanted_list}
+
+        wanted_list = []
+
+        for alias, wanted_items in wanted_dict.items():
+            wanted_items = [normalize(w) for w in wanted_items]
+            wanted_list += wanted_items
+
+            for wanted in wanted_items:
+                children = self._get_children(soup, wanted, url, text_fuzz_ratio)
+
+                for child in children:
+                    result, stack = self._get_result_for_child(child, soup, url)
+                    stack["alias"] = alias
+                    result_list += result
+                    self.stack_list.append(stack)
+
+        result_list = [item.text for item in result_list]
+        result_list = unique_hashable(result_list)
+
+        self.stack_list = unique_stack_list(self.stack_list)
+        return result_list
+
+    async def get_result_similar(
+        self,
+        url=None,
+        html=None,
+        soup=None,
+        request_args=None,
+        grouped=False,
+        group_by_alias=False,
+        unique=None,
+        attr_fuzz_ratio=1.0,
+        keep_blank=False,
+        keep_order=False,
+        contain_sibling_leaves=False,
+    ):
+        if not soup:
+            soup = await self._get_soup_async(url=url, html=html, request_args=request_args)
+
+        func = self._get_result_with_stack
+        return self._get_result_by_func(
+            func,
+            url,
+            html,
+            soup,
+            request_args,
+            grouped,
+            group_by_alias,
+            unique,
+            attr_fuzz_ratio,
+            keep_blank=keep_blank,
+            keep_order=keep_order,
+            contain_sibling_leaves=contain_sibling_leaves,
+        )
+
+    async def get_result_exact(
+        self,
+        url=None,
+        html=None,
+        soup=None,
+        request_args=None,
+        grouped=False,
+        group_by_alias=False,
+        unique=None,
+        attr_fuzz_ratio=1.0,
+        keep_blank=False,
+    ):
+        if not soup:
+            soup = await self._get_soup_async(url=url, html=html, request_args=request_args)
+
+        func = self._get_result_with_stack_index_based
+        return self._get_result_by_func(
+            func,
+            url,
+            html,
+            soup,
+            request_args,
+            grouped,
+            group_by_alias,
+            unique,
+            attr_fuzz_ratio,
+            keep_blank=keep_blank,
+        )
+
+    async def get_result(
+        self,
+        url=None,
+        html=None,
+        request_args=None,
+        grouped=False,
+        group_by_alias=False,
+        unique=None,
+        attr_fuzz_ratio=1.0,
+    ):
+        soup = await self._get_soup_async(url=url, html=html, request_args=request_args)
+        args = dict(
+            url=url,
+            soup=soup,
+            grouped=grouped,
+            group_by_alias=group_by_alias,
+            unique=unique,
+            attr_fuzz_ratio=attr_fuzz_ratio,
+        )
+        similar = await self.get_result_similar(**args)
+        exact = await self.get_result_exact(**args)
+        return similar, exact
