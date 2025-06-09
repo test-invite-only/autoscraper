@@ -47,3 +47,12 @@ def test_get_rule_xpaths():
     rule_id = scraper.stack_list[0]["stack_id"]
     xpaths = scraper.get_rule_xpaths()
     assert xpaths[rule_id] == "/ul[1]/li[1]"
+
+
+def test_get_rule_xpaths_preserves_spaces():
+    html = '<div style=" color: red; ">t</div>'
+    scraper = AutoScraper()
+    scraper.build(html=html, wanted_list=["t"])
+    rule_id = scraper.stack_list[0]["stack_id"]
+    xpaths = scraper.get_rule_xpaths()
+    assert xpaths[rule_id] == '/div[@style=" color: red; "][1]'

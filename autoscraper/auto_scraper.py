@@ -737,10 +737,19 @@ class AutoScraper(object):
                 if not val:
                     continue
                 if isinstance(val, (list, tuple)):
-                    val = " ".join(str(v).strip() for v in val)
+                    val = " ".join(str(v) for v in val)
                 if isinstance(val, str):
-                    val = val.strip()
-                attr_conditions.append(f"@{attr}=\"{val}\"")
+                    val = val
+
+                if '"' in val and "'" in val:
+                    parts = val.split('"')
+                    quoted = 'concat(' + ', "\"", '.join(f'"{p}"' for p in parts[:-1]) + (', ' if len(parts) > 1 else '') + f'"{parts[-1]}")'
+                elif '"' in val:
+                    quoted = f"'{val}'"
+                else:
+                    quoted = f'"{val}"'
+
+                attr_conditions.append(f"@{attr}={quoted}")
             cond = ""
             if attr_conditions:
                 cond = "[" + " and ".join(attr_conditions) + "]"
