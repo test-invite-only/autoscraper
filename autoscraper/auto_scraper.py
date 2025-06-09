@@ -737,9 +737,7 @@ class AutoScraper(object):
                 if not val:
                     continue
                 if isinstance(val, (list, tuple)):
-                    val = " ".join(str(v).strip() for v in val).strip()
-                if isinstance(val, str):
-                    val = val.strip()
+                    val = " ".join(str(v) for v in val)
 
                 if '"' in val and "'" in val:
                     parts = val.split('"')
