@@ -27,6 +27,25 @@ $ python setup.py install
 
 ## How to use
 
+### Quick start: one function for the basics
+
+If you just want to grab similar results from a page without managing an
+``AutoScraper`` instance yourself, use the ``scrape`` helper:
+
+```python
+from autoscraper import scrape
+
+url = 'https://stackoverflow.com/questions/2081586/web-scraping-with-python'
+
+titles = scrape(url=url, wanted_list=["What are metaclasses in Python?"])
+print(titles)
+```
+
+Need the exact ordering or both variations? Set ``mode="exact"`` or
+``mode="both"``. The helper accepts the same ``request_args`` and HTML content
+as ``AutoScraper.build`` when you need extra control, and you can always switch
+to the class-based API shown below once you are ready.
+
 ### Getting similar results
 
 Say we want to fetch all related post titles in a stackoverflow page:
