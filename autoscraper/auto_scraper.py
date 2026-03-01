@@ -223,39 +223,43 @@ class AutoScraper(object):
         List of similar results
         """
 
-        if not wanted_list and not (wanted_dict and any(wanted_dict.values())):
-            raise ValueError("No targets were supplied")
+        try:
+            if not wanted_list and not (wanted_dict and any(wanted_dict.values())):
+                raise ValueError("No targets were supplied")
 
-        soup = self._get_soup(url=url, html=html, request_args=request_args)
+            soup = self._get_soup(url=url, html=html, request_args=request_args)
 
-        result_list = []
+            result_list = []
 
-        if update is False:
-            self.stack_list = []
+            if update is False:
+                self.stack_list = []
 
-        if wanted_list:
-            wanted_dict = {"": wanted_list}
+            if wanted_list:
+                wanted_dict = {"": wanted_list}
 
-        wanted_list = []
+            wanted_list = []
 
-        for alias, wanted_items in wanted_dict.items():
-            wanted_items = [normalize(w) for w in wanted_items]
-            wanted_list += wanted_items
+            for alias, wanted_items in wanted_dict.items():
+                wanted_items = [normalize(w) for w in wanted_items]
+                wanted_list += wanted_items
 
-            for wanted in wanted_items:
-                children = self._get_children(soup, wanted, url, text_fuzz_ratio)
+                for wanted in wanted_items:
+                    children = self._get_children(soup, wanted, url, text_fuzz_ratio)
 
-                for child in children:
-                    result, stack = self._get_result_for_child(child, soup, url)
-                    stack["alias"] = alias
-                    result_list += result
-                    self.stack_list.append(stack)
+                    for child in children:
+                        result, stack = self._get_result_for_child(child, soup, url)
+                        stack["alias"] = alias
+                        result_list += result
+                        self.stack_list.append(stack)
 
-        result_list = [item.text for item in result_list]
-        result_list = unique_hashable(result_list)
+            result_list = [item.text for item in result_list]
+            result_list = unique_hashable(result_list)
 
-        self.stack_list = unique_stack_list(self.stack_list)
-        return result_list
+            self.stack_list = unique_stack_list(self.stack_list)
+            return result_list
+        except Exception as e:
+            print("Error occurred: ", e)
+            return []
 
     @classmethod
     def _build_stack(cls, child, url):
@@ -656,19 +660,22 @@ class AutoScraper(object):
         Pair of (similar, exact) results.
         See get_result_similar and get_result_exact methods.
         """
-
-        soup = self._get_soup(url=url, html=html, request_args=request_args)
-        args = dict(
-            url=url,
-            soup=soup,
-            grouped=grouped,
-            group_by_alias=group_by_alias,
-            unique=unique,
-            attr_fuzz_ratio=attr_fuzz_ratio,
-        )
-        similar = self.get_result_similar(**args)
-        exact = self.get_result_exact(**args)
-        return similar, exact
+        try:
+            soup = self._get_soup(url=url, html=html, request_args=request_args)
+            args = dict(
+                url=url,
+                soup=soup,
+                grouped=grouped,
+                group_by_alias=group_by_alias,
+                unique=unique,
+                attr_fuzz_ratio=attr_fuzz_ratio,
+            )
+            similar = self.get_result_similar(**args)
+            exact = self.get_result_exact(**args)
+            return similar, exact
+        except Exception as e:
+            print("Error occurred: ", e)
+            return None, None
 
     def remove_rules(self, rules):
         """
