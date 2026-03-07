@@ -133,6 +133,17 @@ And to load:
 scraper.load('yahoo-finance')
 ```
 
+### Exporting results
+
+You can easily export your scraped data to various formats (CSV, JSON, TXT) using the built-in exporter utility:
+
+```python
+from autoscraper.utils.exporter import export_results
+
+data = ["item1", "item2"]
+export_results(data, "results.csv", "csv")
+```
+
 ## Tutorials
 
 - See [this gist](https://gist.github.com/alirezamika/72083221891eecd991bbc0a2a2467673) for more advanced usages.
