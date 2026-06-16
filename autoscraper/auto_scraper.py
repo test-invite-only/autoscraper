@@ -92,22 +92,6 @@ class AutoScraper(object):
 
         self.stack_list = data["stack_list"]
 
-    @classmethod
-    def _fetch_html(cls, url, request_args=None):
-        request_args = request_args or {}
-        headers = dict(cls.request_headers)
-        if url:
-            headers["Host"] = urlparse(url).netloc
-
-        user_headers = request_args.pop("headers", {})
-        headers.update(user_headers)
-        res = requests.get(url, headers=headers, **request_args)
-        if res.encoding == "ISO-8859-1" and not "ISO-8859-1" in res.headers.get(
-            "Content-Type", ""
-        ):
-            res.encoding = res.apparent_encoding
-        html = res.text
-        return html
 
     @classmethod
     def _get_soup(cls, url=None, html=None, request_args=None):
