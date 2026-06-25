@@ -57,3 +57,21 @@ class FuzzyText(object):
 
     def search(self, text):
         return SequenceMatcher(None, self.text, text).ratio() >= self.ratio_limit
+
+def save(self, file_path):
+        """
+        Serializes the stack_list as JSON and saves it to the disk.
+
+        Parameters
+        ----------
+        file_path: str
+            Path of the JSON output
+
+        Returns
+        -------
+        None
+        """
+
+        data = dict(stack_list=self.stack_list)
+        with open(file_path, "w") as f:
+            json.dump(data, f)
