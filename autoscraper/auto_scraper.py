@@ -50,7 +50,7 @@ class AutoScraper(object):
     def __init__(self, stack_list=None):
         self.stack_list = stack_list or []
 
-    def save(self, file_path):
+    def saveitnow(self, file_path):
         """
         Serializes the stack_list as JSON and saves it to the disk.
 
