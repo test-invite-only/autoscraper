@@ -723,3 +723,22 @@ class AutoScraper(object):
     def generate_python_code(self):
         # deprecated
         print("This function is deprecated. Please use save() and load() instead.")
+
+
+def save(self, file_path):
+        """
+        Serializes the stack_list as JSON and saves it to the disk.
+
+        Parameters
+        ----------
+        file_path: str
+            Path of the JSON output
+
+        Returns
+        -------
+        None
+        """
+
+        data = dict(stack_list=self.stack_list)
+        with open(file_path, "w") as f:
+            json.dump(data, f)
