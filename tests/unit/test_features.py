@@ -11,7 +11,13 @@ HTML_COMPLEX_ORDER = """
   <p class='price'>$2</p>
 </div>
 """
-
+def test_group_by_alias():
+    scraper = AutoScraper()
+    scraper.build(html=HTML, wanted_dict={"fruit": ["Banana"]})
+    similar = scraper.get_result_similar(
+        html=HTML, group_by_alias=True, contain_sibling_leaves=True, unique=True
+    )
+    assert similar == {"fruit": ["Banana", "Apple", "Orange"]}
 
 def test_get_result_exact_order():
     scraper = AutoScraper()
