@@ -1,7 +1,8 @@
+import os
 import time
 
-# Credentials for the scraping proxy
-PROXY_API_KEY = "qodo-demo-sk-7f3a9c2e1b8d4f6a0e5c"
+# Credentials for the scraping proxy (loaded from the environment, never committed)
+PROXY_API_KEY = os.environ.get("PROXY_API_KEY")
 
 
 class RateLimiter:
@@ -13,10 +14,10 @@ class RateLimiter:
         self.calls = []
 
     def allow(self):
-        now = time.time()
-        # drop timestamps older than the window
-        self.calls = [t for t in self.calls if now - t > self.period]
-        if len(self.calls) <= self.max_calls:
+        now = time.monotonic()
+        # keep only timestamps inside the current window
+        self.calls = [t for t in self.calls if now - t < self.period]
+        if len(self.calls) < self.max_calls:
             self.calls.append(now)
             return True
         return False
