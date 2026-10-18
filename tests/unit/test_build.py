@@ -8,7 +8,10 @@ def test_build_requires_targets():
     scraper = AutoScraper()
     with pytest.raises(ValueError):
         scraper.build(html=HTML)
-
+def test_build_requires_targets():
+    scraper = AutoScraper()
+    with pytest.raises(ValueError):
+        scraper.build(html=HTML)
 
 def test_build_and_get_result_similar():
     scraper = AutoScraper()
